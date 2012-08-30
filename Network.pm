@@ -382,27 +382,17 @@ sub corners {
 	
 	#create edge list for instant lookup
 	my %edges;
-	my %types;
 	foreach my $e (@edges) {
 		my $source = $e->source;
 		my $sink = $e->sink;
-		$edges{$source->ix}{$sink->ix} = $e->type;
-		$edges{$sink->ix}{$source->ix} = $e->type;
-		$types{$e->type} = 1;
+		$edges{$source->ix}{$sink->ix} = 1;
+		$edges{$sink->ix}{$source->ix} = 1;
 	}
 	
-	my @types = sort {$a cmp $b} keys %types;
-	
-	my %corners;
-	for(my $i=0; $i<@types; $i++) {
-		for(my $j=$i; $j<@types; $j++) {
-			$corners{$types[$i]}{$types[$j]} = [];
-			print $types[$i]." ".$types[$j]."\n" if $verbose;
-		}
-	}
+
 	
 	
-	
+	my @corners = ();
 	#search all triangles around node n
 	for(my $i=0; $i<@nodes; $i++) {
 		my $n1 = $nodes[$i];
@@ -419,36 +409,9 @@ sub corners {
 				#triangle found
 				if($edges{$ix1}{$ix3}) {
 					$nTriangles++;
-					
-					
-					my $type1 = $edges{$ix1}{$ix2}; # 1. ix1--ix2
-					my $type2 = $edges{$ix1}{$ix3}; # 2. ix1--ix3
-					my $type3 = $edges{$ix2}{$ix3}; # 3. ix2--ix3
-					
-					# add 3 corners
-					# pattern:
-					# cornerstone, type1, type2
-					
-					# corner 1
-					if($type1 le $type2) {
-						push(@{$corners{$type1}{$type2}},[$ix1,$ix2,$ix3]);
-					} else {
-						push(@{$corners{$type2}{$type1}},[$ix1,$ix3,$ix2]);
-					}
-					
-					# corner 2
-					if($type1 le $type3) {
-						push(@{$corners{$type1}{$type3}},[$ix2,$ix1,$ix3]);
-					} else {
-						push(@{$corners{$type3}{$type1}},[$ix2,$ix3,$ix1]);
-					}
-					
-					# corner 3
-					if($type2 le $type3) {
-						push(@{$corners{$type2}{$type3}},[$ix3,$ix1,$ix2]);
-					} else {
-						push(@{$corners{$type3}{$type2}},[$ix3,$ix2,$ix1]);
-					}
+					push(@corners,[$ix1,$ix2,$ix3]);
+					push(@corners,[$ix2,$ix1,$ix3]);
+					push(@corners,[$ix3,$ix1,$ix2]);
 				}
 			}
 			
@@ -459,19 +422,10 @@ sub corners {
 	}
 	
 	if($verbose) {
-		foreach my $type1 (keys %corners) {
-			foreach my $type2 (keys %{$corners{$type1}}) {
-				my @corners = @{$corners{$type1}{$type2}};
-				print "------------ $type1 - $type2 ------------- ".scalar(@corners)."\n";
-				foreach my $corner (@corners) {
-					print $$corner[0]."-".$$corner[1]."-".$$corner[2]."\n";
-				}
-			}
-		}
 		print $nTriangles."\n";
 	}
 	
-	return \%corners;
+	return \@corners;
 }
 
 

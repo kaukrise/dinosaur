@@ -2,6 +2,7 @@ use Node;
 use Gene;
 use Edge;
 use Network;
+use RandomNetwork;
 
 use Storable;
 use List::Util qw(shuffle);
@@ -285,7 +286,8 @@ close(OUT);
 my $network = new Network(0.0001,\@nodes,\@edges);
 store($network,"$output");
 
-$network->corners;
+#$network->corners;
+RandomNetwork::randomize($network);
 
 exit;
 
